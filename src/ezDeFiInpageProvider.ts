@@ -35,7 +35,7 @@ interface UnvalidatedJsonRpcRequest {
   params?: unknown;
 }
 
-export interface MetaMaskInpageProviderOptions {
+export interface ezDeFiInpageProviderOptions {
 
   /**
    * The name of the stream used to connect to the wallet.
@@ -68,7 +68,7 @@ export interface RequestArguments {
 }
 
 export interface SendSyncJsonRpcRequest extends JsonRpcRequest<unknown> {
-  method: 'eth_accounts' | 'eth_coinbase' | 'eth_uninstallFilter' | 'net_version';
+  method: 'eth_accounts' | 'eth_coinbase' | 'eth_uninstallFilter' | 'net_version' | 'eth_chainId';
 }
 
 interface InternalState {
@@ -94,7 +94,7 @@ interface InternalState {
 
 type WarningEventName = keyof InternalState['sentWarnings']['events'];
 
-export default class MetaMaskInpageProvider extends SafeEventEmitter {
+export default class ezDeFiInpageProvider extends SafeEventEmitter {
 
   private readonly _log: ConsoleLike;
 
@@ -116,26 +116,26 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
 
   /**
    * The user's currently selected Ethereum address.
-   * If null, MetaMask is either locked or the user has not permitted any
+   * If null, ezDeFi is either locked or the user has not permitted any
    * addresses to be viewed.
    */
   public selectedAddress: string | null;
 
   /**
-   * Indicating that this provider is a MetaMask provider.
+   * Indicating that this provider is a ezDeFi provider.
    */
-  public readonly isMetaMask: true;
+  public readonly isezDeFi: true;
 
   /**
    * Experimental methods can be found here.
    */
-  public readonly _metamask: ReturnType<MetaMaskInpageProvider['_getExperimentalApi']>;
+  public readonly _ezDeFi: ReturnType<ezDeFiInpageProvider['_getExperimentalApi']>;
 
   /**
    * @param connectionStream - A Node.js duplex stream
    * @param options - An options bag
    * @param options.jsonRpcStreamName - The name of the internal JSON-RPC stream.
-   * Default: metamask-provider
+   * Default: ezDeFi-provider
    * @param options.logger - The logging API to use. Default: console
    * @param options.maxEventListeners - The maximum number of event
    * listeners. Default: 100
@@ -145,11 +145,11 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
   constructor(
     connectionStream: typeof Duplex,
     {
-      jsonRpcStreamName = 'metamask-provider',
+      jsonRpcStreamName = 'ezDeFi-provider',
       logger = console,
       maxEventListeners = 100,
       shouldSendMetadata = true,
-    }: MetaMaskInpageProviderOptions = {},
+    }: ezDeFiInpageProviderOptions = {},
   ) {
     if (!isDuplex(connectionStream)) {
       throw new Error(messages.errors.invalidDuplexStream());
@@ -169,7 +169,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
     super();
 
     this._log = logger;
-    this.isMetaMask = true;
+    this.isezDeFi = true;
 
     this.setMaxListeners(maxEventListeners);
 
@@ -195,7 +195,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
       isPermanentlyDisconnected: false,
     };
 
-    this._metamask = this._getExperimentalApi();
+    this._ezDeFi = this._getExperimentalApi();
 
     // public state
     this.selectedAddress = null;
@@ -223,7 +223,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
       connectionStream,
       mux as unknown as Duplex,
       connectionStream,
-      this._handleStreamDisconnect.bind(this, 'MetaMask'),
+      this._handleStreamDisconnect.bind(this, 'ezDeFi'),
     );
 
     // ignore phishing warning message (handled elsewhere)
@@ -243,7 +243,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
       jsonRpcConnection.stream,
       mux.createStream(jsonRpcStreamName) as unknown as Duplex,
       jsonRpcConnection.stream,
-      this._handleStreamDisconnect.bind(this, 'MetaMask RpcProvider'),
+      this._handleStreamDisconnect.bind(this, 'ezDeFi RpcProvider'),
     );
 
     // handle RPC requests via dapp-side rpc engine
@@ -259,12 +259,12 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
     jsonRpcConnection.events.on('notification', (payload) => {
       const { method, params } = payload;
 
-      if (method === 'metamask_accountsChanged') {
+      if (method === 'ezDeFi_accountsChanged') {
         this._handleAccountsChanged(params);
 
-      } else if (method === 'metamask_unlockStateChanged') {
+      } else if (method === 'ezDeFi_unlockStateChanged') {
         this._handleUnlockStateChanged(params);
-      } else if (method === 'metamask_chainChanged') {
+      } else if (method === 'ezDeFi_chainChanged') {
         this._handleChainChanged(params);
       } else if (EMITTED_NOTIFICATIONS.includes(method)) {
         // deprecated
@@ -278,7 +278,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
 
         // deprecated
         this.emit('notification', payload.params.result);
-      } else if (method === 'METAMASK_STREAM_FAILURE') {
+      } else if (method === 'ezDeFi_STREAM_FAILURE') {
         connectionStream.destroy(
           new Error(messages.errors.permanentlyDisconnected()),
         );
@@ -407,7 +407,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
 
   /**
    * Constructor helper.
-   * Populates initial state by calling 'metamask_getProviderState' and emits
+   * Populates initial state by calling 'ezDeFi_getProviderState' and emits
    * necessary events.
    */
   private async _initializeState() {
@@ -418,7 +418,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
         isUnlocked,
         networkVersion,
       } = await this.request({
-        method: 'metamask_getProviderState',
+        method: 'ezDeFi_getProviderState',
       }) as {
         accounts: string[];
         chainId: string;
@@ -434,7 +434,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
       this._handleAccountsChanged(accounts);
     } catch (error) {
       this._log.error(
-        'MetaMask: Failed to get initial state. Please report this bug.',
+        'ezDeFi: Failed to get initial state. Please report this bug.',
         error,
       );
     } finally {
@@ -475,6 +475,14 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
           callback(err, res);
         };
       }
+
+      if (payload.method == "eth_chainId") {
+        cb = (error: Error, res: JsonRpcSuccess<object>) => {
+          this._handleChainChanged(res.result || { chainId: "0x1", networkVersion: 1 });
+          callback(error, res)
+        }
+      }
+
       return this._rpcEngine.handle(payload as JsonRpcRequest<unknown>, cb);
     }
     return this._rpcEngine.handle(payload as JsonRpcRequest<unknown>[], cb);
@@ -485,7 +493,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
    * required events. Idempotent.
    *
    * @param chainId - The ID of the newly connected chain.
-   * @emits MetaMaskInpageProvider#connect
+   * @emits ezDeFiInpageProvider#connect
    */
   private _handleConnect(chainId: string) {
     if (!this._state.isConnected) {
@@ -504,7 +512,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
    *
    * @param isRecoverable - Whether the disconnection is recoverable.
    * @param errorMessage - A custom error message.
-   * @emits MetaMaskInpageProvider#disconnect
+   * @emits ezDeFiInpageProvider#disconnect
    */
   private _handleDisconnect(isRecoverable: boolean, errorMessage?: string) {
     if (
@@ -542,7 +550,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
   /**
    * Called when connection is lost to critical streams.
    *
-   * @emits MetamaskInpageProvider#disconnect
+   * @emits ezDeFiInpageProvider#disconnect
    */
   private _handleStreamDisconnect(streamName: string, error: Error) {
     logStreamDisconnectWarning(this._log, streamName, error, this);
@@ -555,7 +563,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
    * Does nothing if neither the chainId nor the networkVersion are different
    * from existing values.
    *
-   * @emits MetamaskInpageProvider#chainChanged
+   * @emits ezDeFiInpageProvider#chainChanged
    * @param networkInfo - An object with network info.
    * @param networkInfo.chainId - The latest chain ID.
    * @param networkInfo.networkVersion - The latest network ID.
@@ -569,7 +577,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
       !networkVersion || typeof networkVersion !== 'string'
     ) {
       this._log.error(
-        'MetaMask: Received invalid network parameters. Please report this bug.',
+        'ezDeFi: Received invalid network parameters. Please report this bug.',
         { chainId, networkVersion },
       );
       return;
@@ -610,7 +618,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
 
     if (!Array.isArray(accounts)) {
       this._log.error(
-        'MetaMask: Received invalid accounts parameter. Please report this bug.',
+        'ezDeFi: Received invalid accounts parameter. Please report this bug.',
         accounts,
       );
       _accounts = [];
@@ -619,7 +627,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
     for (const account of accounts) {
       if (typeof account !== 'string') {
         this._log.error(
-          'MetaMask: Received non-string account. Please report this bug.',
+          'ezDeFi: Received non-string account. Please report this bug.',
           accounts,
         );
         _accounts = [];
@@ -634,7 +642,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
       // returns
       if (isEthAccounts && this._state.accounts !== null) {
         this._log.error(
-          `MetaMask: 'eth_accounts' unexpectedly updated accounts. Please report this bug.`,
+          `ezDeFi: 'eth_accounts' unexpectedly updated accounts. Please report this bug.`,
           _accounts,
         );
       }
@@ -668,15 +676,24 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
   private _handleUnlockStateChanged({
     accounts,
     isUnlocked,
-  }: { accounts?: string[]; isUnlocked?: boolean} = {}) {
+  }: { accounts?: string[]; isUnlocked?: boolean } = {}) {
     if (typeof isUnlocked !== 'boolean') {
-      this._log.error('MetaMask: Received invalid isUnlocked parameter. Please report this bug.');
+      this._log.error('ezDeFi: Received invalid isUnlocked parameter. Please report this bug.');
       return;
     }
 
     if (isUnlocked !== this._state.isUnlocked) {
       this._state.isUnlocked = isUnlocked;
       this._handleAccountsChanged(accounts || []);
+      if (!this.chainId) {
+        console.log("underfine chain Id")
+        try {
+          this._rpcRequest(
+            { method: "eth_chainId", params: "" },
+            NOOP
+          )
+        } catch (_) { /* no-op */ }
+      }
     }
   }
 
@@ -692,7 +709,7 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
 
   /**
    * Constructor helper.
-   * Gets experimental _metamask API as Proxy, so that we can warn consumers
+   * Gets experimental _ezDeFi API as Proxy, so that we can warn consumers
    * about its experiment nature.
    */
   private _getExperimentalApi() {
@@ -700,9 +717,9 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
       {
 
         /**
-         * Determines if MetaMask is unlocked by the user.
+         * Determines if ezDeFi is unlocked by the user.
          *
-         * @returns Promise resolving to true if MetaMask is currently unlocked
+         * @returns Promise resolving to true if ezDeFi is currently unlocked
          */
         isUnlocked: async () => {
           if (!this._state.initialized) {
@@ -848,7 +865,9 @@ export default class MetaMaskInpageProvider extends SafeEventEmitter {
   private _sendSync(payload: SendSyncJsonRpcRequest) {
     let result;
     switch (payload.method) {
-
+      case 'eth_chainId':
+        result = this.chainId ? this.chainId : 1;
+        break;
       case 'eth_accounts':
         result = this.selectedAddress ? [this.selectedAddress] : [];
         break;

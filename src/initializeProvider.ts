@@ -1,8 +1,8 @@
 import { Duplex } from 'stream';
-import MetaMaskInpageProvider, { MetaMaskInpageProviderOptions } from './MetaMaskInpageProvider';
+import ezDeFiInpageProvider, { ezDeFiInpageProviderOptions } from './ezDeFiInpageProvider';
 import shimWeb3 from './shimWeb3';
 
-interface InitializeProviderOptions extends MetaMaskInpageProviderOptions {
+interface InitializeProviderOptions extends ezDeFiInpageProviderOptions {
 
   /**
    * The stream used to connect to the wallet.
@@ -21,7 +21,7 @@ interface InitializeProviderOptions extends MetaMaskInpageProviderOptions {
 }
 
 /**
- * Initializes a MetaMaskInpageProvider and (optionally) assigns it as window.ethereum.
+ * Initializes a ezDeFiInpageProvider and (optionally) assigns it as window.ethereum.
  *
  * @param options - An options bag.
  * @param options.connectionStream - A Node.js stream.
@@ -40,8 +40,8 @@ export function initializeProvider({
   shouldSendMetadata = true,
   shouldSetOnWindow = true,
   shouldShimWeb3 = false,
-}: InitializeProviderOptions): MetaMaskInpageProvider {
-  let provider = new MetaMaskInpageProvider(
+}: InitializeProviderOptions): ezDeFiInpageProvider {
+  let provider = new ezDeFiInpageProvider(
     connectionStream,
     {
       jsonRpcStreamName,
@@ -73,7 +73,7 @@ export function initializeProvider({
  *
  * @param providerInstance - The provider instance.
  */
-export function setGlobalProvider(providerInstance: MetaMaskInpageProvider): void {
+export function setGlobalProvider(providerInstance: ezDeFiInpageProvider): void {
   (window as Record<string, any>).ethereum = providerInstance;
   window.dispatchEvent(new Event('ethereum#initialized'));
 }

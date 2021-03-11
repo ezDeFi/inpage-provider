@@ -1,10 +1,10 @@
-import MetaMaskInpageProvider from './MetaMaskInpageProvider';
+import ezDeFiInpageProvider from './ezDeFiInpageProvider';
 import { initializeProvider, setGlobalProvider } from './initializeProvider';
 import shimWeb3 from './shimWeb3';
 
 export {
   initializeProvider,
-  MetaMaskInpageProvider,
+  ezDeFiInpageProvider,
   setGlobalProvider,
   shimWeb3,
 };

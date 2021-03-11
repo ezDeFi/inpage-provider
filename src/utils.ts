@@ -30,7 +30,7 @@ export function createErrorMiddleware(log: ConsoleLike): JsonRpcMiddleware<unkno
       if (!error) {
         return done();
       }
-      log.error(`MetaMask - RPC Error: ${error.message}`, error);
+      log.error(`ezDeFi - RPC Error: ${error.message}`, error);
       return done();
     });
   };
@@ -44,15 +44,15 @@ export const getRpcPromiseCallback = (
 ) => (
   error: Error,
   response: PendingJsonRpcResponse<unknown>,
-): void => {
-  if (error || response.error) {
-    reject(error || response.error);
-  } else {
-    !unwrapResult || Array.isArray(response)
-      ? resolve(response)
-      : resolve(response.result);
-  }
-};
+  ): void => {
+    if (error || response.error) {
+      reject(error || response.error);
+    } else {
+      !unwrapResult || Array.isArray(response)
+        ? resolve(response)
+        : resolve(response.result);
+    }
+  };
 
 /**
  * Logs a stream disconnection error. Emits an 'error' if given an
@@ -69,7 +69,7 @@ export function logStreamDisconnectWarning(
   error: Error,
   emitter: EventEmitter,
 ): void {
-  let warningMsg = `MetaMask: Lost connection to "${remoteLabel}".`;
+  let warningMsg = `ezDeFi: Lost connection to "${remoteLabel}".`;
   if (error?.stack) {
     warningMsg += `\n${error.stack}`;
   }

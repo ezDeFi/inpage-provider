@@ -1,4 +1,4 @@
-const { MetaMaskInpageProvider } = require('../dist');
+const { ezDeFiInpageProvider } = require('../dist');
 const { default: messages } = require('../dist/messages');
 
 const MockDuplexStream = require('./mocks/DuplexStream');
@@ -8,14 +8,14 @@ const MOCK_ERROR_MESSAGE = 'Did you specify a mock return value?';
 function initializeProvider() {
   jest.useFakeTimers();
   const mockStream = new MockDuplexStream();
-  const provider = new MetaMaskInpageProvider(mockStream);
+  const provider = new ezDeFiInpageProvider(mockStream);
   provider.mockStream = mockStream;
   provider.autoRefreshOnNetworkChange = false;
   jest.runAllTimers();
   return provider;
 }
 
-describe('MetaMaskInpageProvider: RPC', () => {
+describe('ezDeFiInpageProvider: RPC', () => {
 
   // mocking the underlying stream, and testing the basic functionality of
   // .reqest, .sendAsync, and .send
