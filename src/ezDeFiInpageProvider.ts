@@ -145,7 +145,7 @@ export default class ezDeFiInpageProvider extends SafeEventEmitter {
   constructor(
     connectionStream: typeof Duplex,
     {
-      jsonRpcStreamName = 'ezDeFi-provider',
+      jsonRpcStreamName = 'ezdefi-provider',
       logger = console,
       maxEventListeners = 100,
       shouldSendMetadata = true,
@@ -223,7 +223,7 @@ export default class ezDeFiInpageProvider extends SafeEventEmitter {
       connectionStream,
       mux as unknown as Duplex,
       connectionStream,
-      this._handleStreamDisconnect.bind(this, 'ezDeFi'),
+      this._handleStreamDisconnect.bind(this, 'ezdefi'),
     );
 
     // ignore phishing warning message (handled elsewhere)
@@ -259,12 +259,12 @@ export default class ezDeFiInpageProvider extends SafeEventEmitter {
     jsonRpcConnection.events.on('notification', (payload) => {
       const { method, params } = payload;
 
-      if (method === 'ezDeFi_accountsChanged') {
+      if (method === 'ezdefi_accountsChanged') {
         this._handleAccountsChanged(params);
 
-      } else if (method === 'ezDeFi_unlockStateChanged') {
+      } else if (method === 'ezdefi_unlockStateChanged') {
         this._handleUnlockStateChanged(params);
-      } else if (method === 'ezDeFi_chainChanged') {
+      } else if (method === 'ezdefi_chainChanged') {
         this._handleChainChanged(params);
       } else if (EMITTED_NOTIFICATIONS.includes(method)) {
         // deprecated
@@ -278,7 +278,7 @@ export default class ezDeFiInpageProvider extends SafeEventEmitter {
 
         // deprecated
         this.emit('notification', payload.params.result);
-      } else if (method === 'ezDeFi_STREAM_FAILURE') {
+      } else if (method === 'EZDEFI_STREAM_FAILURE') {
         connectionStream.destroy(
           new Error(messages.errors.permanentlyDisconnected()),
         );
@@ -418,7 +418,7 @@ export default class ezDeFiInpageProvider extends SafeEventEmitter {
         isUnlocked,
         networkVersion,
       } = await this.request({
-        method: 'ezDeFi_getProviderState',
+        method: 'ezdefi_getProviderState',
       }) as {
         accounts: string[];
         chainId: string;
