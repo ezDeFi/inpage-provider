@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Duplex } from 'stream';
 import ezDeFiInpageProvider, { ezDeFiInpageProviderOptions } from './ezDeFiInpageProvider';
 import shimWeb3 from './shimWeb3';

@@ -1,4 +1,6 @@
+// @ts-ignore
 import { Duplex } from 'stream';
+// @ts-ignore
 import pump from 'pump';
 import {
   JsonRpcEngine,
@@ -171,6 +173,7 @@ export default class ezDeFiInpageProvider extends SafeEventEmitter {
     this._log = logger;
     this.isezDeFi = true;
 
+    // @ts-ignore
     this.setMaxListeners(maxEventListeners);
 
     // private state
@@ -256,6 +259,7 @@ export default class ezDeFiInpageProvider extends SafeEventEmitter {
     this._initializeState();
 
     // handle JSON-RPC notifications
+    // @ts-ignore
     jsonRpcConnection.events.on('notification', (payload) => {
       const { method, params } = payload;
 
@@ -378,26 +382,31 @@ export default class ezDeFiInpageProvider extends SafeEventEmitter {
 
   addListener(eventName: string, listener: (...args: unknown[]) => void) {
     this._warnOfDeprecation(eventName);
+    // @ts-ignore
     return super.addListener(eventName, listener);
   }
 
   on(eventName: string, listener: (...args: unknown[]) => void) {
     this._warnOfDeprecation(eventName);
+    // @ts-ignore
     return super.on(eventName, listener);
   }
 
   once(eventName: string, listener: (...args: unknown[]) => void) {
     this._warnOfDeprecation(eventName);
+    // @ts-ignore
     return super.once(eventName, listener);
   }
 
   prependListener(eventName: string, listener: (...args: unknown[]) => void) {
     this._warnOfDeprecation(eventName);
+    // @ts-ignore
     return super.prependListener(eventName, listener);
   }
 
   prependOnceListener(eventName: string, listener: (...args: unknown[]) => void) {
     this._warnOfDeprecation(eventName);
+    // @ts-ignore
     return super.prependOnceListener(eventName, listener);
   }
 

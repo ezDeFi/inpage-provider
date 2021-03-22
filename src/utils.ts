@@ -1,3 +1,4 @@
+// @ts-ignore
 import { EventEmitter } from 'events';
 import { JsonRpcMiddleware, PendingJsonRpcResponse } from 'json-rpc-engine';
 import { ethErrors } from 'eth-rpc-errors';
